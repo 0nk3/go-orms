@@ -86,7 +86,23 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// UpdateUser . . .
+// UpdateUser email. . .
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	log.Println(w, "Update User End-Point Hit . . .")
+	db, err = gorm.Open("sqlite3", "users.db")
+	if err != nil {
+		log.Println("Failed to open database inside AllUsers . . .")
+	}
+	defer db.Close()
+	vars := mux.Vars(r)
+	firstname := vars["firsname"]
+	// lastname := vars["lastname"]
+	email := vars["email"]
+
+	var user User
+	db.Where("firstname = ?", firstname).Find(&user)
+
+	user.Email = email
+	db.Save(&user)
+	fmt.Fprintf(w, "User email address updated . . . ")
 }
