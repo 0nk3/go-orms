@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
@@ -16,9 +17,9 @@ var err error
 // User . . .
 type User struct {
 	gorm.Model
-	firstname string
-	lastname  string
-	email     string
+	FirstName string
+	LastName  string
+	Email     string
 }
 
 // InitialMigration  . . .
@@ -35,7 +36,7 @@ func InitialMigration() {
 
 // AllUsers . . .
 func AllUsers(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "All users End-Point Hit. . . ")
+	log.Println(w, "All users End-Point Hit. . . ")
 	db, err = gorm.Open("sqlite3", "users.db")
 	if err != nil {
 		log.Println("Failed to open database inside AllUsers . . .")
@@ -51,15 +52,41 @@ func AllUsers(w http.ResponseWriter, r *http.Request) {
 
 // NewUser . . .
 func NewUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "New User creation End-Point Hit . . .")
+	log.Println(w, "New User creation End-Point Hit . . .")
+	db, err = gorm.Open("sqlite3", "users.db")
+	if err != nil {
+		log.Println("Failed to open database inside AllUsers . . .")
+	}
+	defer db.Close()
+	// lets add a user by capturing the path
+	vars := mux.Vars(r)
+	firstname := vars["firstname"]
+	lastname := vars["lastname"]
+	email := vars["email"]
+
+	db.Create(&User{FirstName: firstname, LastName: lastname, Email: email})
+	fmt.Fprintf(w, "New user added to the db . . . ")
 }
 
 // DeleteUser . . .
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Delete User End-Point Hit . . .")
+	log.Println(w, "Delete User End-Point Hit . . .")
+	db, err = gorm.Open("sqlite3", "users.db")
+	if err != nil {
+		log.Println("Failed to open database inside AllUsers . . .")
+	}
+	defer db.Close()
+
+	vars := mux.Vars(r)
+	firstname := vars["firstname"]
+	var user User
+	db.Where("FirstName = ?", firstname).Find(&user)
+	db.Delete(&user)
+	fmt.Fprintf(w, "User deleted . . . ")
+
 }
 
 // UpdateUser . . .
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Update User End-Point Hit . . .")
+	log.Println(w, "Update User End-Point Hit . . .")
 }
